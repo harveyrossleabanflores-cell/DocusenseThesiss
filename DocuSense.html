@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocuSense — AI-Generated Academic Document Integrity System</title>
+  <!-- Google Fonts: Manrope & IBM Plex Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      /* Deep Maroon Palette (Faithful to Picture 1 & 2) */
+      --color-primary: #4A121D;
+      --color-primary-dark: #350C14;
+      --color-primary-hover: #5A1624;
+      --color-primary-light: #F5EBED;
+      --color-primary-subtle: #FAF2F4;
+      --color-hero-bg: #4A121D;
+
+      /* Academic Gold Palette (Faithful to Picture 1) */
+      --color-gold: #C59B27;
+      --color-gold-hover: #D4AF37;
+      --color-gold-dark: #A37E1C;
+      --color-gold-light: #FEF7E6;
+      --color-gold-border: #C59B27;
+      --color-gold-active: #FCD34D;
+      --color-gold-badge: #C99E39;
+      --color-gold-badge-text: #4A121D;
+      --color-gold-glow: rgba(197, 155, 39, 0.25);
+
+      /* Clean Neutrals & Surfaces */
+      --color-bg-page: #F7F8F9;
+      --color-bg-card: #FFFFFF;
+      --color-text-main: #181415;
+      --color-text-muted: #665D60;
+      --color-text-on-maroon: #FFFFFF;
+      --color-text-sub-on-maroon: #EBD8DC;
+      --color-border: #E2D9DB;
+      --color-border-input: #9E9194;
+      --color-border-dashed: #9E9194;
+
+      /* Radii & Shadows */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
+      --shadow-elevated: 0 10px 30px rgba(74, 18, 29, 0.12);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+      color: var(--color-text-main);
+      background: var(--color-bg-page);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      font-family: 'Manrope', system-ui, sans-serif;
+      color: var(--color-text-main);
+      background: var(--color-bg-page);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ----------------------------------------------------
+       GOLD TEXT COMBINATIONS & ACCENTS
+       ---------------------------------------------------- */
+    .gold-text {
+      color: var(--color-gold) !important;
+    }
+
+    .gold-gradient {
+      background: linear-gradient(135deg, #FDE68A 0%, #C59B27 50%, #A37E1C 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+      font-weight: 800;
+    }
+
+    .gold-underline {
+      position: relative;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .gold-underline::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 100%;
+      height: 3.5px;
+      background: #D99B26;
+      border-radius: 2px;
+    }
+
+    .eyebrow-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 18px;
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(217, 155, 38, 0.45);
+      border-radius: 99px;
+      margin-bottom: 22px;
+      width: fit-content;
+    }
+
+    .eyebrow-pill .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #D99B26;
+      box-shadow: 0 0 6px rgba(217, 155, 38, 0.6);
+    }
+
+    .eyebrow-pill .text {
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      color: #D99B26;
+      text-transform: uppercase;
+    }
+
+    /* Top Navigation Bar (Faithful to User Screenshot) */
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 36px;
+      background: var(--color-primary);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .brand {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-weight: 800;
+      font-size: 23px;
+      color: #FFFFFF;
+      text-decoration: none;
+      cursor: pointer;
+      letter-spacing: -0.4px;
+    }
+
+    .brand svg {
+      stroke: var(--color-primary);
+    }
+
+    .brand-gold {
+      color: #D99B26;
+    }
+
+    /* Nav Item: Active Gold Border Tab (Picture Dashboard tab) */
+    .nav-tab-gold {
+      font: 800 15px 'Manrope', sans-serif;
+      min-height: 40px;
+      padding: 0 20px;
+      border: 2px solid #D99B26;
+      border-radius: 12px;
+      background: transparent;
+      color: #D99B26;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .nav-tab-gold:hover {
+      background: rgba(217, 155, 38, 0.12);
+    }
+
+    /* Nav Item: Ghost White Button on Maroon */
+    .nav-btn-ghost {
+      font: 700 15px 'Manrope', sans-serif;
+      min-height: 40px;
+      padding: 0 20px;
+      border: 1.5px solid rgba(255, 255, 255, 0.45);
+      border-radius: 12px;
+      background: transparent;
+      color: #FFFFFF;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .nav-btn-ghost:hover {
+      border-color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Role Pill (Solid Gold on Maroon) */
+    .nav-role-pill {
+      font: 800 14px 'Manrope', sans-serif;
+      min-height: 40px;
+      padding: 0 20px;
+      border-radius: 99px;
+      background: #D99B26;
+      color: #350C14;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.2px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .wrap {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-card);
+    }
+
+    /* Buttons */
+    .btn {
+      font: 600 15px 'Manrope', sans-serif;
+      min-height: 44px;
+      padding: 0 20px;
+      border-radius: 10px;
+      border: 1px solid var(--color-primary);
+      background: var(--color-primary);
+      color: #FFFFFF;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: var(--color-primary-hover);
+      border-color: var(--color-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.ghost {
+      background: #FFFFFF;
+      color: var(--color-text-main);
+      border: 1px solid var(--color-border);
+    }
+
+    .btn.ghost:hover {
+      background: var(--color-primary-light);
+      border-color: var(--color-border);
+      color: var(--color-primary);
+    }
+
+    .btn.danger {
+      background: #FFFFFF;
+      color: #9F1239;
+      border: 1px solid #E2B2BE;
+    }
+
+    .btn.danger:hover {
+      background: #FFE4E8;
+      border-color: #9F1239;
+    }
+
+    /* ----------------------------------------------------
+       TABLE ACTION BUTTONS: OPEN & DELETE (USER SCREENSHOT)
+       ---------------------------------------------------- */
+    .btn-action-open {
+      font: 700 14px 'Manrope', sans-serif;
+      min-height: 34px;
+      min-width: 72px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: none;
+      background: var(--color-primary);
+      color: #FFFFFF;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2.5px 0 #D99B26;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn-action-open:hover {
+      background: #D99B26;
+      color: #181415;
+      box-shadow: 0 2.5px 0 #B8801A;
+      transform: translateY(-1px);
+    }
+
+    .btn-action-open:active {
+      transform: translateY(1.5px);
+      box-shadow: 0 1px 0 #B8801A;
+    }
+
+    /* Featured / Active row gold variant (Picture row 1) */
+    .btn-action-open.featured {
+      background: #D99B26;
+      color: #181415;
+      box-shadow: 0 2.5px 0 #B8801A;
+      font-weight: 800;
+    }
+
+    .btn-action-open.featured:hover {
+      background: #E5A836;
+      box-shadow: 0 2.5px 0 #9E6B10;
+      transform: translateY(-1px);
+    }
+
+    .btn-action-open.featured:active {
+      transform: translateY(1.5px);
+      box-shadow: 0 1px 0 #9E6B10;
+    }
+
+    .btn-action-delete {
+      font: 700 14px 'Manrope', sans-serif;
+      min-height: 34px;
+      min-width: 72px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: none;
+      background: var(--color-primary);
+      color: #FFFFFF;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2.5px 0 #D99B26;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn-action-delete:hover {
+      background: #601423;
+      color: #FFFFFF;
+      box-shadow: 0 2.5px 0 #E5A836;
+      transform: translateY(-1px);
+    }
+
+    .btn-action-delete:active {
+      transform: translateY(1.5px);
+      box-shadow: 0 1px 0 #D99B26;
+    }
+
+    /* ----------------------------------------------------
+       ADMIN USER DIRECTORY (FAITHFUL TO USER SCREENSHOT 2)
+       ---------------------------------------------------- */
+    .admin-banner {
+      width: 100%;
+      background: var(--color-primary);
+      border-radius: 14px;
+      box-shadow: 0 4px 0 #D99B26;
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      color: #FFFFFF;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .admin-banner-sep {
+      color: #FFFFFF;
+      opacity: 0.95;
+      font-size: 19px;
+      margin: 0 2px;
+    }
+
+    .admin-table-card {
+      width: 100%;
+      background: #FFFFFF;
+      border: 1px solid #ECE4E6;
+      border-top: 5px solid #D99B26;
+      border-radius: 20px;
+      padding: 24px 28px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+      margin-top: 6px;
+    }
+
+    .admin-table-card table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .admin-table-card th {
+      font-size: 13px;
+      font-weight: 800;
+      color: #181415;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 14px 16px;
+      border-bottom: 2.5px solid #D99B26;
+      text-align: left;
+    }
+
+    .admin-table-card td {
+      padding: 16px 16px;
+      border-bottom: 1px solid #F0EAEB;
+      font-size: 14.5px;
+      vertical-align: middle;
+    }
+
+    .admin-table-card tr:last-child td {
+      border-bottom: none;
+    }
+
+    .admin-inp {
+      font: 500 14.5px 'Manrope', sans-serif;
+      height: 46px;
+      width: 100%;
+      min-width: 180px;
+      max-width: 260px;
+      padding: 0 16px;
+      border: 1.5px solid #D5CED0;
+      border-radius: 12px;
+      background: #FFFFFF;
+      color: #181415;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .admin-inp:focus {
+      border: 2px solid #D99B26;
+      box-shadow: 0 0 0 3px rgba(217, 155, 38, 0.2);
+    }
+
+    .admin-sel {
+      font: 600 14.5px 'Manrope', sans-serif;
+      height: 46px;
+      min-width: 140px;
+      padding: 0 16px;
+      border: 1.5px solid #D5CED0;
+      border-radius: 12px;
+      background: #FFFFFF;
+      color: #181415;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .admin-sel:focus {
+      border: 2px solid #D99B26;
+      box-shadow: 0 0 0 3px rgba(217, 155, 38, 0.2);
+    }
+
+    /* Gold-bordered tab (Picture 4 Dashboard nav item) */
+    .tab-gold {
+      font: 700 14px 'Manrope', sans-serif;
+      min-height: 40px;
+      padding: 0 18px;
+      border: 2px solid var(--color-gold);
+      border-radius: var(--radius-sm);
+      background: #FFFFFF;
+      color: var(--color-text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 4px var(--color-gold-glow);
+      transition: all 0.15s ease;
+    }
+
+    .tab-gold:hover {
+      background: var(--color-gold-light);
+      border-color: var(--color-gold-hover);
+    }
+
+    .lnk {
+      font: 600 14px 'Manrope', sans-serif;
+      background: none;
+      border: 0;
+      color: var(--color-primary);
+      text-decoration: underline;
+      cursor: pointer;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0;
+      transition: color 0.15s ease;
+    }
+
+    .lnk:hover {
+      color: var(--color-primary-hover);
+    }
+
+    /* Inputs */
+    .inp {
+      font: 400 15px 'Manrope', sans-serif;
+      min-height: 44px;
+      width: 100%;
+      padding: 0 14px;
+      border: 1px solid var(--color-border-input);
+      border-radius: 10px;
+      background: #FFFFFF;
+      color: var(--color-text-main);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .inp:focus {
+      border-color: var(--color-gold);
+      box-shadow: 0 0 0 3px var(--color-gold-glow);
+    }
+
+    .lbl {
+      font-weight: 600;
+      font-size: 14px;
+      display: block;
+      margin: 16px 0 6px;
+      color: var(--color-text-main);
+    }
+
+    .mut {
+      color: var(--color-text-muted);
+    }
+
+    .mono {
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0 0 6px;
+      letter-spacing: -0.5px;
+      color: var(--color-text-main);
+    }
+
+    .h2 {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0 0 12px;
+      color: var(--color-text-main);
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Tabs */
+    .tab {
+      font: 600 14px 'Manrope', sans-serif;
+      min-height: 40px;
+      padding: 0 16px;
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      background: #FFFFFF;
+      color: var(--color-text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.15s ease;
+    }
+
+    .tab:hover {
+      background: var(--color-primary-light);
+      border-color: var(--color-border);
+    }
+
+    .tab.active-maroon {
+      background: var(--color-primary) !important;
+      border-color: var(--color-primary) !important;
+      color: #FFFFFF !important;
+      font-weight: 700;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--color-border);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #ECE4E6;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: #FAF8F8;
+    }
+
+    .tw {
+      overflow-x: auto;
+    }
+
+    /* Badges & Pills */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .pill-role-educator {
+      background: #F5EBED;
+      color: var(--color-primary);
+      border: 1px solid #EAE0E2;
+      font-weight: 700;
+    }
+
+    /* The Signature 0-100% Probability Badge from Picture 1 */
+    .badge-probability {
+      background: var(--color-gold-badge);
+      color: var(--color-gold-badge-text);
+      border-radius: 8px;
+      padding: 6px 14px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(197, 155, 39, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .badge-probability .prob-num {
+      font-weight: 800;
+      font-size: 16px;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+
+    .badge-probability .prob-label {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.95;
+      text-transform: lowercase;
+    }
+
+    /* Alert / Status Notes */
+    .note {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      margin-top: 14px;
+      border-left: 4px solid var(--color-primary);
+    }
+
+    /* Reader Highlighted Segments */
+    .seg {
+      font: inherit;
+      line-height: 1.85;
+      border: 0;
+      border-bottom: 3px solid var(--color-gold);
+      background: var(--color-gold-light);
+      color: var(--color-text-main);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 2px;
+      transition: all 0.15s ease;
+    }
+
+    .seg:hover {
+      background: #FDE68A;
+      border-bottom-color: var(--color-gold-dark);
+    }
+
+    .seg.selected {
+      background: var(--color-gold-active) !important;
+      border-bottom: 3px solid var(--color-primary) !important;
+      font-weight: 600;
+      box-shadow: 0 0 0 2px var(--color-gold-glow);
+    }
+
+    /* Weekly Chart Bar */
+    .week-bar-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-end;
+      height: 100%;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .week-bar {
+      width: 72%;
+      border-radius: 6px 6px 0 0;
+      background: var(--color-primary);
+      transition: all 0.25s ease;
+    }
+
+    .week-bar-container:hover .week-bar {
+      background: var(--color-gold);
+      transform: scaleY(1.05);
+      box-shadow: 0 4px 10px var(--color-gold-glow);
+    }
+
+    .week-bar-container:hover .mono {
+      color: var(--color-gold-dark);
+      font-weight: 700;
+    }
+
+    /* Layer Progress Bar */
+    .layer-bar-track {
+      display: block;
+      height: 8px;
+      border-radius: 99px;
+      background: #EAE2E4;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .layer-bar-fill {
+      display: block;
+      height: 100%;
+      border-radius: 99px;
+      background: var(--color-primary);
+      transition: width 0.4s ease;
+    }
+
+    .card.layer-card:hover .layer-bar-fill {
+      background: var(--color-gold);
+    }
+
+    /* ----------------------------------------------------
+       LOGIN & AUTH CARD (FAITHFUL TO USER SCREENSHOT)
+       ---------------------------------------------------- */
+    .auth-card {
+      width: 100%;
+      max-width: 430px;
+      background: #FFFFFF;
+      border-radius: 24px;
+      border: 1.5px solid #ECE4E6;
+      border-top: 5px solid #D99B26;
+      padding: 36px 30px 28px 30px;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    .auth-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #181415;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+    }
+
+    .auth-subtitle {
+      font-size: 15px;
+      font-weight: 500;
+      color: #665D60;
+      margin: 0 0 18px 0;
+    }
+
+    .role-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .role-btn {
+      font: 700 14.5px 'Manrope', sans-serif;
+      padding: 8px 18px;
+      min-height: 40px;
+      border-radius: 12px;
+      border: 1.5px solid #D5CED0;
+      background: #FFFFFF;
+      color: #181415;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .role-btn:hover {
+      background: #FAF6F7;
+      border-color: #D99B26;
+    }
+
+    .role-btn.active {
+      background: #D99B26 !important;
+      border-color: #D99B26 !important;
+      color: #1F1404 !important;
+      font-weight: 700;
+    }
+
+    .auth-lbl {
+      display: block;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #181415;
+      margin: 18px 0 8px;
+    }
+
+    .auth-inp {
+      font: 500 15px 'Manrope', sans-serif;
+      height: 48px;
+      width: 100%;
+      padding: 0 16px;
+      border: 1.5px solid #D5CED0;
+      border-radius: 12px;
+      background: #FFFFFF;
+      color: #181415;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .auth-inp::placeholder {
+      color: #8C8285;
+      opacity: 1;
+      font-weight: 400;
+    }
+
+    .auth-inp:focus {
+      border-color: #D99B26;
+      box-shadow: 0 0 0 3px rgba(217, 155, 38, 0.2);
+    }
+
+    .auth-btn-primary {
+      font: 700 16px 'Manrope', sans-serif;
+      width: 100%;
+      height: 48px;
+      border-radius: 12px;
+      border: none;
+      background: var(--color-primary);
+      color: #FFFFFF;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 24px;
+      transition: all 0.15s ease;
+      letter-spacing: -0.2px;
+    }
+
+    .auth-btn-primary:hover {
+      background: var(--color-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .auth-btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .auth-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .auth-link {
+      font: 800 14px 'Manrope', sans-serif;
+      background: none;
+      border: none;
+      color: #181415;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s ease;
+    }
+
+    .auth-link:hover {
+      color: var(--color-primary);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="root"></div>
+
+  <script>
+    // State Store
+    const state = {
+      screen: 'login', // 'login' | 'register' | 'forgot' | 'dash' | 'scan' | 'admin'
+      role: 'educator', // 'student' | 'educator' | 'admin' (pre-selected Educator matching screenshot)
+      email: 'harveyrossleabanflores@gmail.com', // Pre-filled from screenshot
+      pass: '', // Empty so the placeholder 'Password' is shown like in screenshot
+      authErr: '',
+      authOk: '',
+      file: '',
+      upErr: '',
+      busy: false,
+      scanId: 's1',
+      layer: -1,
+      seg: -1,
+      adminMsg: '',
+      scans: [
+        { id: 's1', name: 'Chapter2_Literature_Review.docx', owner: 'me', date: 'Oct 21', words: 1284, layers: [72, 81, 30, 64], flags: [1, 3, 5] },
+        { id: 's2', name: 'Intro_Draft.txt', owner: 'other', date: 'Oct 19', words: 842, layers: [28, 35, 30, 22], flags: [] },
+        { id: 's3', name: 'Methodology_v2.pdf', owner: 'me', date: 'Oct 17', words: 2310, layers: [48, 55, 30, 41], flags: [3] },
+        { id: 's4', name: 'Reflection_Essay.docx', owner: 'other', date: 'Oct 14', words: 956, layers: [85, 88, 60, 79], flags: [1, 3, 5] }
+      ],
+      users: [
+        { id: 'u1', name: 'You (demo)', email: 'harveyrossleabanflores@gmail.com', role: 'Educator' },
+        { id: 'u2', name: 'Sample Educator', email: 'educator@school.edu', role: 'Educator' },
+        { id: 'u3', name: 'Sample Student', email: 'student@school.edu', role: 'Student' }
+      ]
+    };
+
+    const LY = [
+      { n: 'Stylometric', w: 30, d: 'Sentence-length variation and lexical diversity.' },
+      { n: 'Semantic', w: 35, d: 'Hedging phrases, boilerplate openers, transition cadence.' },
+      { n: 'Metadata', w: 15, d: 'Author field and timestamp gap. Circumstantial only.' },
+      { n: 'Classifier', w: 20, d: 'AI-signature phrases and starter repetition (rule-based).' }
+    ];
+
+    const SEG = [
+      { t: 'Digital learning platforms have changed how students submit and revise coursework across the college.' },
+      { t: 'It is important to note that technology plays a crucial role in modern education, and it is worth noting that outcomes may vary.', ly: 1, why: 'Hedging phrases and a boilerplate sentence opener.' },
+      { t: 'In our survey of three sections, most respondents reported using the portal at least twice a week.' },
+      { t: 'Furthermore, this comprehensive approach underscores the multifaceted nature of student engagement. Moreover, it fosters a holistic understanding.', ly: 3, why: 'Dense AI-signature phrases and repeated sentence starters.' },
+      { t: 'We did not control for course load, so these figures should be read as a rough indication only.' },
+      { t: 'The system improves efficiency. The system improves accuracy. The system improves outcomes for every learner involved.', ly: 0, why: 'Uniform sentence length and low lexical diversity.' }
+    ];
+
+    const WK = [34, 41, 38, 52, 47, 58, 44, 49];
+
+    function band(s) {
+      if (s > 70) return { n: 'High', c: '#9F1239', bg: '#FFE4E8', t: 'This warrants a conversation with the author, not a finding on its own.' };
+      if (s > 50) return { n: 'Moderate', c: '#9A3412', bg: '#FFEDD5', t: 'Read all four layers before drawing conclusions.' };
+      if (s > 30) return { n: 'Low to moderate', c: '#854D0E', bg: '#FEF9C3', t: 'Some flags, but most patterns resemble human writing.' };
+      return { n: 'Low', c: '#166534', bg: '#DCFCE7', t: 'Consistent with a human-written paper.' };
+    }
+
+    function overall(l) {
+      return Math.round(l[0] * 0.3 + l[1] * 0.35 + l[2] * 0.15 + l[3] * 0.2);
+    }
+
+    function go(screen) {
+      state.screen = screen;
+      state.authErr = '';
+      state.authOk = '';
+      state.adminMsg = '';
+      state.seg = -1;
+      state.layer = -1;
+      render();
+    }
+
+    // SVG Paper Document Illustration with Gold Highlights & 0-100% Probability Badge
+    function renderDocumentIllustrationSVG() {
+      return `
+        <svg width="220" height="260" viewBox="0 0 220 260" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 12px 24px rgba(0,0,0,0.22)); overflow: visible;">
+          <!-- Tilted Back Sheet -->
+          <rect x="26" y="10" width="168" height="225" rx="8" transform="rotate(5 26 10)" fill="#732537" opacity="0.35"/>
+          <rect x="24" y="8" width="168" height="225" rx="8" transform="rotate(5 24 8)" fill="#DFD2D5"/>
+          
+          <!-- Front Pure White Document -->
+          <rect x="12" y="16" width="168" height="225" rx="8" fill="#FFFFFF"/>
+          
+          <!-- Content Bars simulating text -->
+          <!-- Line 1: Normal Grey -->
+          <rect x="28" y="38" width="136" height="5.5" rx="2.5" fill="#D2CBCD"/>
+          <!-- Line 2: Gold Highlighted AI detection Line (User Screenshot) -->
+          <rect x="28" y="52" width="136" height="6.5" rx="3" fill="#D99B26"/>
+          <!-- Line 3: Gold Highlighted AI detection Line (User Screenshot) -->
+          <rect x="28" y="66" width="82" height="6.5" rx="3" fill="#D99B26"/>
+          <!-- Line 4: Normal Grey -->
+          <rect x="28" y="80" width="136" height="5.5" rx="2.5" fill="#D2CBCD"/>
+          <!-- Line 5: Normal Grey -->
+          <rect x="28" y="94" width="136" height="5.5" rx="2.5" fill="#D2CBCD"/>
+          <!-- Line 6: Gold Highlighted AI detection Line -->
+          <rect x="28" y="108" width="82" height="6.5" rx="3" fill="#D99B26"/>
+          <!-- Line 7: Normal Grey -->
+          <rect x="28" y="122" width="136" height="5.5" rx="2.5" fill="#D2CBCD"/>
+          <!-- Line 8: Normal Grey -->
+          <rect x="28" y="136" width="136" height="5.5" rx="2.5" fill="#D2CBCD"/>
+          <!-- Line 9: Normal Grey -->
+          <rect x="28" y="150" width="136" height="5.5" rx="2.5" fill="#D2CBCD"/>
+          <!-- Line 10: Gold Highlighted AI detection Line -->
+          <rect x="28" y="164" width="82" height="6.5" rx="3" fill="#D99B26"/>
+          
+          <!-- Iconic Picture 1 Gold Badge: 0-100% Probability -->
+          <g transform="translate(100, 178)" style="cursor: pointer;">
+            <rect width="90" height="52" rx="7" fill="#C99E39"/>
+            <text x="45" y="24" font-family="'Manrope', sans-serif" font-weight="800" font-size="14" fill="#4A121D" text-anchor="middle">0–100%</text>
+            <text x="45" y="40" font-family="'Manrope', sans-serif" font-weight="600" font-size="10.5" fill="#4A121D" text-anchor="middle">probability</text>
+          </g>
+        </svg>
+      `;
+    }
+
+    function render() {
+      const root = document.getElementById('root');
+      const isAuth = ['login', 'register', 'forgot'].includes(state.screen);
+
+      if (isAuth) {
+        root.innerHTML = renderAuthView();
+      } else {
+        root.innerHTML = `
+          <div class="app">
+            ${renderBar()}
+            <main class="wrap">
+              ${state.screen === 'dash' ? renderDashboard() : ''}
+              ${state.screen === 'scan' ? renderScanView() : ''}
+              ${state.screen === 'admin' ? renderAdminView() : ''}
+            </main>
+          </div>
+        `;
+      }
+
+      attachHandlers();
+    }
+
+    function renderBar() {
+      const rl = { student: 'Student', educator: 'Educator', admin: 'Admin' };
+      return `
+        <header class="bar">
+          <div class="brand" id="brand-logo-home" title="DocuSense Home">
+            <span>Docu<span class="brand-gold">Sense</span></span>
+          </div>
+          <nav class="row" style="gap:14px;align-items:center;">
+            <button class="${state.screen === 'dash' ? 'nav-tab-gold' : 'nav-btn-ghost'}" id="btn-nav-dash">Dashboard</button>
+            ${state.role === 'admin' ? `<button class="${state.screen === 'admin' ? 'nav-tab-gold' : 'nav-btn-ghost'}" id="btn-nav-admin">Admin</button>` : ''}
+            <span class="nav-role-pill">${rl[state.role]}</span>
+            <button class="nav-btn-ghost" id="btn-sign-out">Sign out</button>
+          </nav>
+        </header>
+      `;
+    }
+
+    function renderAuthView() {
+      const rl = { student: 'Student', educator: 'Educator', admin: 'Admin' };
+      return `
+        <div class="app">
+          <div class="row" style="min-height:100vh;align-items:stretch;gap:0;">
+            <!-- Left Hero Section (Faithful to User Screenshot) -->
+            <div style="flex:1 1 500px;background:var(--color-hero-bg);color:#FFFFFF;padding:52px 48px;display:flex;flex-direction:column;justify-content:space-between;gap:24px;border-right:1px solid rgba(0,0,0,0.1);">
+              <div>
+                <div class="brand" style="color:#FFFFFF;margin-bottom:34px;font-size:26px;font-weight:800;letter-spacing:-0.5px;">
+                  <span>Docu<span style="color:#D99B26;">Sense</span></span>
+                </div>
+
+                <!-- Gold Eyebrow Pill (Faithful to User Screenshot) -->
+                <div class="eyebrow-pill">
+                  <span class="dot"></span>
+                  <span class="text">Exploring Identifying Tool</span>
+                </div>
+
+                <!-- Main Headline (Faithful to User Screenshot) -->
+                <div style="margin-bottom:28px;">
+                  <h1 style="font-size:42px;line-height:1.2;margin:0 0 0;font-weight:800;letter-spacing:-0.5px;color:#FFFFFF;">
+                    AI is one of the most<br>
+                    significant<br>
+                    <span style="color:#D99B26;">technological</span><br>
+                    <span style="color:#D99B26;">advancements.</span>
+                  </h1>
+                  
+                  <!-- Gold Horizontal Line Divider (Faithful to User Screenshot) -->
+                  <div style="width:100%;max-width:480px;height:3px;background:linear-gradient(90deg, #D99B26 0%, #D99B26 68%, rgba(217, 155, 38, 0.05) 100%);border-radius:2px;margin:22px 0 24px;"></div>
+
+                  <p style="font-size:16px;line-height:1.65;margin:0;color:var(--color-text-sub-on-maroon);max-width:480px;">
+                    Difficulty of accurately and efficiently identifying AI-generated content in academic documents using existing plagiarism detection.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Institution & Authors Footer with Gold Highlights -->
+              <div style="border-top:1px solid rgba(255,255,255,0.14);padding-top:18px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+                  <span style="font-size:15px;color:var(--color-gold);font-weight:800;letter-spacing:0.2px;">City College of Tagaytay</span>
+                  <span style="color:rgba(255,255,255,0.3);font-size:12px;">&bull;</span>
+                  <span style="font-size:13.5px;color:var(--color-text-sub-on-maroon);">School of Computer Studies</span>
+                </div>
+                <div style="font-size:13px;color:rgba(235, 216, 220, 0.8);">
+                  Researchers: Bartiana, Elloso, Flores, Rafer &nbsp;|&nbsp; Adviser: Mr. Angelito Caraan &nbsp;|&nbsp; 2026
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Form Section (Faithful to User Screenshot) -->
+            <div style="flex:1 1 420px;display:flex;align-items:center;justify-content:center;padding:36px 24px;background:var(--color-bg-page);">
+              <div class="auth-card">
+                ${state.screen === 'login' ? `
+                  <h2 class="auth-title">Log in</h2>
+                  <p class="auth-subtitle">Choose role</p>
+                  
+                  <!-- Role Picker Buttons matching user screenshot -->
+                  <div class="role-row">
+                    ${Object.keys(rl).map(r => `
+                      <button class="role-btn ${state.role === r ? 'active' : ''}" data-role-pick="${r}">
+                        ${rl[r]}
+                      </button>
+                    `).join('')}
+                  </div>
+
+                  <label class="auth-lbl" for="em">Email</label>
+                  <input id="em" class="auth-inp" type="email" placeholder="you@school.edu" value="${state.email}">
+                  
+                  <label class="auth-lbl" for="pw">Password</label>
+                  <input id="pw" class="auth-inp" type="password" placeholder="Password" value="${state.pass}">
+                  
+                  ${state.authErr ? `<div class="note" style="background:#FFE4E8;color:#9F1239;border-left-color:#9F1239;margin-top:14px;" role="alert">${state.authErr}</div>` : ''}
+                  ${state.authOk ? `<div class="note" role="status" style="margin-top:14px;">${state.authOk}</div>` : ''}
+                  
+                  <button class="auth-btn-primary" id="btn-do-login">Log in</button>
+                  
+                  <div class="auth-links">
+                    <button class="auth-link" id="link-to-forgot">Forgot password?</button>
+                    <button class="auth-link" id="link-to-register">Create account</button>
+                  </div>
+                ` : ''}
+
+                ${state.screen === 'register' ? `
+                  <h2 class="auth-title">Create account</h2>
+                  <p class="auth-subtitle">New accounts are always Students. Educators are promoted by an Admin.</p>
+                  
+                  <label class="auth-lbl" for="re">Email</label>
+                  <input id="re" class="auth-inp" type="email" placeholder="you@school.edu" value="${state.email}">
+                  
+                  <label class="auth-lbl" for="rp">Password</label>
+                  <input id="rp" class="auth-inp" type="password" placeholder="Password" value="${state.pass}">
+                  
+                  ${state.authErr ? `<div class="note" style="background:#FFE4E8;color:#9F1239;border-left-color:#9F1239;margin-top:14px;" role="alert">${state.authErr}</div>` : ''}
+                  
+                  <button class="auth-btn-primary" id="btn-do-register">Register</button>
+                  <div class="auth-links" style="justify-content:flex-start;">
+                    <button class="auth-link" id="link-to-login-1">Back to log in</button>
+                  </div>
+                ` : ''}
+
+                ${state.screen === 'forgot' ? `
+                  <h2 class="auth-title">Reset password</h2>
+                  <p class="auth-subtitle">A one-time token is issued and expires after 1 hour.</p>
+                  
+                  <label class="auth-lbl" for="fe">Email</label>
+                  <input id="fe" class="auth-inp" type="email" placeholder="you@school.edu" value="${state.email}">
+                  
+                  ${state.authOk ? `<div class="note" role="status" style="margin-top:14px;">${state.authOk}</div>` : ''}
+                  
+                  <button class="auth-btn-primary" id="btn-do-forgot">Send reset token</button>
+                  <div class="auth-links" style="justify-content:flex-start;">
+                    <button class="auth-link" id="link-to-login-2">Back to log in</button>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDashboard() {
+      const isStudent = state.role === 'student';
+      const mine = (x) => isStudent ? x.owner === 'me' : true;
+      const ownerName = (o) => o === 'me' ? 'You' : 'Another user';
+
+      const visibleRows = state.scans.filter(mine);
+      const canUpload = state.role !== 'admin';
+
+      return `
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h1 class="h1">Dashboard</h1>
+            <p class="mut" style="margin:0;">A score is a <span class="gold-text" style="font-weight:700;">signal</span>, not a finding.</p>
+          </div>
+        </div>
+
+        <div class="row" style="align-items:stretch;margin-bottom:24px;">
+          <!-- Upload a document Card (Picture 4) -->
+          <section class="card" style="flex:1 1 380px;">
+            <h2 class="h2">Upload a document</h2>
+            ${canUpload ? `
+              <div style="border:2px dashed var(--color-border-dashed);border-radius:12px;padding:32px 20px;text-align:center;background:#FAF8F8;transition:border-color 0.2s;" id="drop-area">
+                <p style="margin:0 0 6px;font-weight:700;font-size:16px;color:var(--color-text-main);">
+                  ${state.file ? state.file : 'No file chosen'}
+                </p>
+                <p class="mut" style="margin:0 0 16px;font-size:13px;">PDF, DOC, DOCX, TXT, RTF or ODT · up to 100 MB</p>
+                <div class="row" style="justify-content:center;gap:12px;align-items:center;">
+                  <button class="btn ghost" id="btn-choose-file">Choose file</button>
+                  <button class="lnk" id="btn-try-zip">Try a .zip</button>
+                </div>
+              </div>
+              ${state.upErr ? `<div class="note" style="background:#FFE4E8;color:#9F1239;border-left-color:#9F1239;" role="alert">${state.upErr}</div>` : ''}
+              <button class="btn" id="btn-analyze" style="width:100%;margin-top:18px;">
+                ${state.busy ? 'Analyzing with 4 layers…' : 'Analyze document'}
+              </button>
+            ` : `
+              <div class="note">Admin accounts cannot upload documents (403). Switch to a Student or Educator to scan.</div>
+            `}
+          </section>
+
+          <!-- Mean overall score per week Card (Picture 4) -->
+          <section class="card" style="flex:1 1 380px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <h2 class="h2" style="margin:0;">Mean overall score per week</h2>
+              <span class="pill" style="background:var(--color-gold-light);color:var(--color-gold-dark);font-size:12px;font-weight:700;border:1px solid rgba(197, 155, 39, 0.4);">
+                <span style="color:var(--color-gold-dark);font-weight:800;">0–100%</span> scale
+              </span>
+            </div>
+            
+            <div style="display:flex;gap:10px;align-items:flex-end;height:150px;padding:0 8px;">
+              ${WK.map((v, i) => `
+                <div class="week-bar-container" title="Week ${i + 1}: ${v}% mean probability">
+                  <span class="mono" style="font-size:12px;color:var(--color-text-main);">${v}</span>
+                  <div class="week-bar" style="height:${Math.round(v * 1.55)}px;"></div>
+                  <span class="mut" style="font-size:12px;">W${i + 1}</span>
+                </div>
+              `).join('')}
+            </div>
+            <p class="mut" style="font-size:12px;margin:12px 0 0;">Sample data, last 8 weeks. Hover bars to highlight in gold.</p>
+          </section>
+        </div>
+
+        <!-- Recent scans Table Card (Picture 4) -->
+        <section class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+            <h2 class="h2" style="margin:0;">Recent scans</h2>
+            <span class="mut" style="font-size:13px;">Showing ${visibleRows.length} documents</span>
+          </div>
+          
+          <div class="tw">
+            <table>
+              <thead>
+                <tr>
+                  <th>Document</th>
+                  <th>Uploaded by</th>
+                  <th>Date</th>
+                  <th>Score</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${visibleRows.map((x, idx) => {
+        const sc = overall(x.layers);
+        const b = band(sc);
+        const isFirst = idx === 0;
+        return `
+                    <tr style="${isFirst ? 'background:#FEFBF6;' : ''}">
+                      <td style="font-weight:600;color:var(--color-primary);">${x.name}</td>
+                      <td>${ownerName(x.owner)}</td>
+                      <td class="mut">${x.date}</td>
+                      <td>
+                        <span class="pill" style="background:${b.bg};color:${b.c};">
+                          ${sc}% · ${b.n}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="row" style="gap:10px;align-items:center;">
+                          <button class="btn-action-open ${isFirst ? 'featured' : ''}" data-open-scan="${x.id}">Open</button>
+                          <button class="btn-action-delete" data-del-scan="${x.id}">Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+      }).join('')}
+              </tbody>
+            </table>
+          </div>
+          ${visibleRows.length === 0 ? `<p class="mut" style="margin-top:16px;">No scans yet. Upload a document to begin.</p>` : ''}
+        </section>
+      `;
+    }
+
+    function renderScanView() {
+      const ownerName = (o) => o === 'me' ? 'You' : 'Another user';
+      const x = state.scans.find(y => y.id === state.scanId) || state.scans[0];
+      const sc = overall(x.layers);
+      const b = band(sc);
+      const top = x.layers.map((v, i) => v * LY[i].w).indexOf(Math.max(...x.layers.map((v, i) => v * LY[i].w)));
+      const cur = {
+        name: x.name,
+        owner: ownerName(x.owner),
+        words: x.words.toLocaleString('en-US'),
+        flagCount: x.flags.length,
+        score: sc,
+        band: b.n,
+        pill: `background:${b.bg};color:${b.c}`,
+        summary: `The strongest signal comes from the ${LY[top].n} layer (${x.layers[top]}%). ${b.t} This is an estimate, not a verdict.`
+      };
+
+      const ag = SEG[state.seg];
+      const showAct = !!ag && x.flags.includes(state.seg);
+
+      return `
+        <button class="lnk" id="btn-back-dashboard" style="margin-bottom:12px;font-size:15px;">← Back to dashboard</button>
+        <h1 class="h1">${cur.name}</h1>
+        <p class="mut" style="margin:0 0 24px;">${cur.words} words · ${cur.flagCount} flagged passages · uploaded by ${cur.owner}</p>
+
+        <div class="row" style="align-items:stretch;margin-bottom:24px;">
+          <!-- Overall estimate with Picture 1 Gold Probability Badge styling -->
+          <section class="card" style="flex:1 1 280px;display:flex;flex-direction:column;justify-content:space-between;">
+            <div>
+              <p class="mut" style="margin:0;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;">Overall estimate</p>
+              <div style="display:flex;align-items:baseline;gap:12px;margin:12px 0 10px;">
+                <p class="mono" style="font-size:54px;font-weight:700;line-height:1;color:var(--color-primary);">${cur.score}%</p>
+                <div class="badge-probability">
+                  <span class="prob-num">0–100%</span>
+                  <span class="prob-label">probability</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <span class="pill" style="${cur.pill};font-size:14px;padding:6px 14px;">${cur.band}</span>
+            </div>
+          </section>
+
+          <section class="card" style="flex:3 1 480px;">
+            <h2 class="h2">Summary</h2>
+            <p style="margin:0;line-height:1.7;font-size:15.5px;">${cur.summary}</p>
+          </section>
+        </div>
+
+        <h2 class="h2" style="margin-top:24px;">
+          Layer scores <span class="mut" style="font-weight:400;font-size:14px;">(click a layer to filter highlights in the reader below)</span>
+        </h2>
+        
+        <div class="row" style="margin-bottom:24px;">
+          ${LY.map((l, i) => {
+        const isSelected = state.layer === i;
+        return `
+              <button class="card layer-card" style="text-align:left;cursor:pointer;flex:1 1 230px;font-family:inherit;color:var(--color-text-main);border-width:2px;${isSelected ? 'border-color:var(--color-gold);background:var(--color-gold-light);box-shadow:0 0 0 2px var(--color-gold-glow);' : ''}" data-pick-layer="${i}">
+                <span style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:15px;">
+                  <span>${l.n}</span>
+                  <span class="mono" style="color:var(--color-primary);font-size:16px;">${x.layers[i]}%</span>
+                </span>
+                <span class="layer-bar-track">
+                  <span class="layer-bar-fill" style="width:${x.layers[i]}%;${isSelected ? 'background:var(--color-gold);' : ''}"></span>
+                </span>
+                <span class="mut" style="display:block;font-size:13px;line-height:1.5;">
+                  Weight ${l.w}% · ${l.d}
+                </span>
+              </button>
+            `;
+      }).join('')}
+        </div>
+
+        <div class="row" style="align-items:flex-start;">
+          <!-- Reader with Picture 1 Gold Highlight Lines -->
+          <section class="card" style="flex:3 1 520px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <h2 class="h2" style="margin:0;">Reader</h2>
+              <span class="pill" style="background:var(--color-gold-light);color:var(--color-gold-dark);font-size:12px;border:1px solid rgba(197, 155, 39, 0.3);">
+                Gold lines = Flagged Passages
+              </span>
+            </div>
+            
+            <p style="line-height:2.0;margin:0;font-size:16px;">
+              ${SEG.map((g, i) => {
+        const on = x.flags.includes(i) && (state.layer < 0 || state.layer === g.ly);
+        if (on) {
+          const isSelected = state.seg === i;
+          return `
+                    <button class="seg ${isSelected ? 'selected' : ''}" data-pick-seg="${i}" title="Flagged in ${LY[g.ly].n} layer — Click to see explanation">
+                      ${g.t}
+                    </button>
+                  `;
+        }
+        return `<span>${g.t} </span>`;
+      }).join('')}
+            </p>
+            <p class="mut" style="font-size:12.5px;margin:18px 0 0;border-top:1px solid #ECE4E6;padding-top:10px;">
+              Sample simulated text for testing explainable probability scoring.
+            </p>
+          </section>
+
+          <!-- Why it was flagged -->
+          <section class="card" style="flex:2 1 320px;">
+            <h2 class="h2">Why it was flagged</h2>
+            ${showAct ? `
+              <div style="padding:14px;background:var(--color-gold-light);border-radius:10px;border-left:4px solid var(--color-gold);margin-bottom:12px;">
+                <p style="margin:0 0 6px;font-weight:800;color:var(--color-primary);font-size:15px;">${LY[ag.ly].n} Layer</p>
+                <p style="margin:0;line-height:1.6;font-size:14px;">${ag.why}</p>
+              </div>
+              <p class="mut" style="font-size:12px;margin:0;">This signal is contextual evidence to support academic discussion.</p>
+            ` : `
+              <p class="mut" style="margin:0;line-height:1.6;">
+                Click any gold-highlighted passage in the reader to view the corresponding detection layer, linguistic feature, and explanation.
+              </p>
+            `}
+          </section>
+        </div>
+      `;
+    }
+
+    function renderAdminView() {
+      return `
+        <div class="admin-banner">
+          <span>Docu<span class="brand-gold">Sense</span></span>
+          <span class="admin-banner-sep">•</span>
+          <span>Users</span>
+        </div>
+
+        <p class="mut" style="margin:0 0 18px;font-size:14.5px;">Role changes take effect at the user’s next login.</p>
+
+        ${state.adminMsg ? `<div class="note" role="status" style="margin:0 0 16px;">${state.adminMsg}</div>` : ''}
+
+        <section class="admin-table-card">
+          <div class="tw">
+            <table>
+              <thead>
+                <tr>
+                  <th>NAME</th>
+                  <th>EMAIL</th>
+                  <th>ROLE</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${state.users.map(u => `
+                  <tr>
+                    <td>
+                      <input class="admin-inp" aria-label="Name" value="${u.name}" data-user-name="${u.id}">
+                    </td>
+                    <td class="mut" style="font-size:14px;">${u.email}</td>
+                    <td>
+                      <select class="admin-sel" aria-label="Role" data-user-role="${u.id}">
+                        <option value="Student" ${u.role === 'Student' ? 'selected' : ''}>Student</option>
+                        <option value="Educator" ${u.role === 'Educator' ? 'selected' : ''}>Educator</option>
+                        <option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                      </select>
+                    </td>
+                    <td>
+                      <button class="btn-action-delete" data-user-del="${u.id}">Delete</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
+    function attachHandlers() {
+      // Home logo click
+      const brandLogo = document.getElementById('brand-logo-home');
+      if (brandLogo) brandLogo.onclick = () => go('dash');
+
+      // Nav actions
+      const navDash = document.getElementById('btn-nav-dash');
+      if (navDash) navDash.onclick = () => go('dash');
+
+      const navAdmin = document.getElementById('btn-nav-admin');
+      if (navAdmin) navAdmin.onclick = () => go('admin');
+
+      const btnSignOut = document.getElementById('btn-sign-out');
+      if (btnSignOut) btnSignOut.onclick = () => {
+        state.screen = 'login';
+        state.pass = '';
+        state.authErr = '';
+        state.authOk = '';
+        render();
+      };
+
+      // Auth actions
+      document.querySelectorAll('[data-role-pick]').forEach(el => {
+        el.onclick = () => {
+          state.role = el.getAttribute('data-role-pick');
+          render();
+        };
+      });
+
+      const emInput = document.getElementById('em');
+      if (emInput) {
+        emInput.oninput = (e) => state.email = e.target.value;
+        emInput.onchange = (e) => state.email = e.target.value;
+      }
+
+      const pwInput = document.getElementById('pw');
+      if (pwInput) {
+        pwInput.oninput = (e) => state.pass = e.target.value;
+        pwInput.onchange = (e) => state.pass = e.target.value;
+      }
+
+      const btnDoLogin = document.getElementById('btn-do-login');
+      if (btnDoLogin) {
+        btnDoLogin.onclick = () => {
+          if (!state.email) {
+            state.authErr = 'Please enter your email.';
+            render();
+          } else {
+            go('dash');
+          }
+        };
+      }
+
+      const linkToForgot = document.getElementById('link-to-forgot');
+      if (linkToForgot) linkToForgot.onclick = () => go('forgot');
+
+      const linkToRegister = document.getElementById('link-to-register');
+      if (linkToRegister) linkToRegister.onclick = () => go('register');
+
+      const linkToLogin1 = document.getElementById('link-to-login-1');
+      if (linkToLogin1) linkToLogin1.onclick = () => go('login');
+
+      const linkToLogin2 = document.getElementById('link-to-login-2');
+      if (linkToLogin2) linkToLogin2.onclick = () => go('login');
+
+      const btnDoRegister = document.getElementById('btn-do-register');
+      if (btnDoRegister) {
+        btnDoRegister.onclick = () => {
+          const re = document.getElementById('re');
+          const rp = document.getElementById('rp');
+          if (!re || !re.value || !rp || !rp.value) {
+            state.authErr = 'Email and password are both required.';
+            render();
+          } else {
+            state.screen = 'login';
+            state.role = 'student';
+            state.pass = '';
+            state.authErr = '';
+            state.authOk = 'Account created as a Student. Log in to continue.';
+            render();
+          }
+        };
+      }
+
+      const btnDoForgot = document.getElementById('btn-do-forgot');
+      if (btnDoForgot) {
+        btnDoForgot.onclick = () => {
+          state.authOk = 'Reset token issued (demo only, no email is sent). It expires in 1 hour.';
+          render();
+        };
+      }
+
+      // Upload Card actions
+      const btnChooseFile = document.getElementById('btn-choose-file');
+      if (btnChooseFile) {
+        btnChooseFile.onclick = () => {
+          state.file = 'Research_Thesis_Chapter1.docx';
+          state.upErr = '';
+          render();
+        };
+      }
+
+      const btnTryZip = document.getElementById('btn-try-zip');
+      if (btnTryZip) {
+        btnTryZip.onclick = () => {
+          state.file = '';
+          state.upErr = 'That file type is not supported. Accepted types: PDF, DOC, DOCX, TXT, RTF, ODT.';
+          render();
+        };
+      }
+
+      const btnAnalyze = document.getElementById('btn-analyze');
+      if (btnAnalyze) {
+        btnAnalyze.onclick = () => {
+          if (state.busy) return;
+          if (!state.file) {
+            state.upErr = 'Choose a file first. Empty uploads are rejected.';
+            render();
+          } else {
+            state.busy = true;
+            state.upErr = '';
+            render();
+
+            setTimeout(() => {
+              const pre = [[68, 76, 30, 62], [42, 48, 25, 38], [80, 85, 50, 75]][state.scans.length % 3];
+              const id = 'n' + state.scans.length + Date.now();
+              const f = overall(pre) > 50 ? [1, 3, 5] : [3];
+
+              state.busy = false;
+              const newName = state.file || 'Research_Thesis_Chapter1.docx';
+              state.file = '';
+              state.scans.unshift({
+                id: id,
+                name: newName,
+                owner: 'me',
+                date: 'Today',
+                words: 1450,
+                layers: pre,
+                flags: f
+              });
+              state.screen = 'scan';
+              state.scanId = id;
+              state.layer = -1;
+              state.seg = -1;
+              render();
+            }, 1200);
+          }
+        };
+      }
+
+      // Recent Scans Table actions
+      document.querySelectorAll('[data-open-scan]').forEach(el => {
+        el.onclick = () => {
+          state.scanId = el.getAttribute('data-open-scan');
+          state.screen = 'scan';
+          state.layer = -1;
+          state.seg = -1;
+          render();
+        };
+      });
+
+      document.querySelectorAll('[data-del-scan]').forEach(el => {
+        el.onclick = () => {
+          const id = el.getAttribute('data-del-scan');
+          state.scans = state.scans.filter(y => y.id !== id);
+          render();
+        };
+      });
+
+      // Scan detail view actions
+      const btnBackDashboard = document.getElementById('btn-back-dashboard');
+      if (btnBackDashboard) btnBackDashboard.onclick = () => go('dash');
+
+      document.querySelectorAll('[data-pick-layer]').forEach(el => {
+        el.onclick = () => {
+          const idx = parseInt(el.getAttribute('data-pick-layer'), 10);
+          state.layer = state.layer === idx ? -1 : idx;
+          state.seg = -1;
+          render();
+        };
+      });
+
+      document.querySelectorAll('[data-pick-seg]').forEach(el => {
+        el.onclick = () => {
+          const idx = parseInt(el.getAttribute('data-pick-seg'), 10);
+          state.seg = idx;
+          render();
+        };
+      });
+
+      // Admin directory actions
+      document.querySelectorAll('[data-user-name]').forEach(el => {
+        el.onchange = (e) => {
+          const uid = el.getAttribute('data-user-name');
+          const v = e.target.value.trim();
+          if (!v) {
+            state.adminMsg = 'Name cannot be empty.';
+          } else {
+            const u = state.users.find(y => y.id === uid);
+            if (u) u.name = v;
+            state.adminMsg = 'Name updated.';
+          }
+          render();
+        };
+      });
+
+      document.querySelectorAll('[data-user-role]').forEach(el => {
+        el.onchange = (e) => {
+          const uid = el.getAttribute('data-user-role');
+          const r = e.target.value;
+          const admins = state.users.filter(y => y.role === 'Admin').length;
+
+          if (uid === 'u1' && r !== 'Admin') {
+            state.adminMsg = 'You cannot demote yourself.';
+          } else if (state.users.find(y => y.id === uid)?.role === 'Admin' && r !== 'Admin' && admins < 2) {
+            state.adminMsg = 'You cannot demote the last remaining Admin.';
+          } else {
+            const u = state.users.find(y => y.id === uid);
+            if (u) u.role = r;
+            state.adminMsg = `Role updated. It takes effect at ${u.name}’s next login.`;
+          }
+          render();
+        };
+      });
+
+      document.querySelectorAll('[data-user-del]').forEach(el => {
+        el.onclick = () => {
+          const uid = el.getAttribute('data-user-del');
+          if (uid === 'u1') {
+            state.adminMsg = 'You cannot delete your own account.';
+          } else {
+            state.users = state.users.filter(y => y.id !== uid);
+            state.adminMsg = 'Account deleted.';
+          }
+          render();
+        };
+      });
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+
+</html>
